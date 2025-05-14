@@ -1,14 +1,14 @@
-# Coralizer: Integrating Firecrawl MCP with Coral Server
+# Coraliser: Integrating Firecrawl MCP with Coral Server
 
-## What is Coralizer?
+## What is Coraliser?
 
-Coralizer is a powerful tool designed to seamlessly integrate any SSE-compatible MCP (Multi-Agent Coordination Platform) server with the Coral Server. By hosting your MCP and running `coralizer.py` with the agent name and SSE address, Coralizer handles the integration process, creating a Coral-compatible agent ready to interact within the Coral network. This eliminates the need for custom wiring or complex setup, making your MCP agent instantly usable and production-ready.
+Coraliser is a powerful tool designed to seamlessly integrate any SSE-compatible MCP (Multi-Agent Coordination Platform) server with the Coral Server. By hosting your MCP and running `coraliser.py` with the agent name and SSE address, Coraliser handles the integration process, creating a Coral-compatible agent ready to interact within the Coral network. This eliminates the need for custom wiring or complex setup, making your MCP agent instantly usable and production-ready.
 
-In this demo, we are **coralizing the Firecrawl MCP**, enabling it to operate as a Coral agent capable of scraping, crawling, and extracting data from web pages and URLs, as well as performing deep research and generating structured data for analysis.
+In this demo, we are **coralising the Firecrawl MCP**, enabling it to operate as a Coral agent capable of scraping, crawling, and extracting data from web pages and URLs, as well as performing deep research and generating structured data for analysis.
 
-## Why Coralizer?
+## Why Coraliser?
 
-Coralizer streamlines the adoption of Coral in MCP-based projects. Once connected, your MCP agent can receive inputs from the Coral network and invoke its tools as needed. This makes your multi-agent system more efficient, scalable, and ready for production use without additional configuration.
+Coraliser streamlines the adoption of Coral in MCP-based projects. Once connected, your MCP agent can receive inputs from the Coral network and invoke its tools as needed. This makes your multi-agent system more efficient, scalable, and ready for production use without additional configuration.
 
 ## Prerequisites
 
@@ -17,9 +17,9 @@ Coralizer streamlines the adoption of Coral in MCP-based projects. Once connecte
 - Access to a Firecrawl API key (set as `FIRECRAWL_API_KEY` in your environment variables)
 - Node.js and npm installed (for running the Firecrawl MCP)
 - Basic familiarity with terminal commands and Python virtual environments
-- Coral Server running (typically at `http://localhost:5555`) if you intend to run the coralized agent
+- Coral Server running (typically at `http://localhost:5555`) if you intend to run the coralised agent
 
-## Setting Up and Running the Coralizer
+## Setting Up and Running the Coraliser
 
 ### 1. Set Up the Virtual Environment
 
@@ -32,7 +32,7 @@ source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 
 ### 2. Install Dependencies
 
-Install the required Python packages for the Coralizer:
+Install the required Python packages for the Coraliser:
 
 ```bash
 pip install pydantic
@@ -40,12 +40,12 @@ pip install langchain_openai
 pip install langchain_mcp_adapters
 ```
 
-### 3. Navigate to the Coralizer Directory
+### 3. Navigate to the Coraliser Directory
 
-Change to the Coralizer directory within your Coral Server project:
+Change to the Coraliser directory within your Coral Server project:
 
 ```bash
-cd coral-server/coralizer
+cd coral-server/coraliser
 ```
 
 ### 4. Run the Firecrawl MCP
@@ -61,9 +61,9 @@ env SSE_LOCAL=true FIRECRAWL_API_KEY=fc-YOUR_API_KEY npx -y firecrawl-mcp
 
 3. Copy the SSE endpoint displayed in the terminal (e.g., `http://localhost:3000/sse`). This address may vary depending on the MCP configuration.
 
-### 5. Run the Coralizer
+### 5. Run the Coraliser
 
-In a new terminal, ensure the Python virtual environment is activated, then configure and run the Coralizer:
+In a new terminal, ensure the Python virtual environment is activated, then configure and run the Coraliser:
 
 1. Set the OpenAI API key in your environment variables:
 
@@ -71,31 +71,31 @@ In a new terminal, ensure the Python virtual environment is activated, then conf
 export OPENAI_API_KEY='your-openai-api-key-here'  # On Windows, use: set OPENAI_API_KEY=your-openai-api-key-here
 ```
 
-2. Run the Coralizer script:
+2. Run the Coraliser script:
 
 ```bash
-python utils/coralizer.py
+python utils/coraliser.py
 ```
 
 3. When prompted, provide the following inputs:
    - **Enter the agent name**: `firecrawl`
    - **Enter the MCP server URL**: `http://localhost:3000/sse` (use the SSE endpoint copied from the Firecrawl MCP terminal)
 
-4. A successful run of the Coralizer should produce output similar to the following:
+4. A successful run of the Coraliser should produce output similar to the following:
 
 ```bash
-(coralizer) suman@DESKTOP-47QSFPT:~/projects/coral_protocol/v2/coral-server/coralizer$ python3 utils/coralizer.py
+(coraliser) suman@DESKTOP-47QSFPT:~/projects/coral_protocol/v2/coral-server/coraliser$ python3 utils/coraliser.py
 Enter the agent name: firecrawl
 Enter the MCP server URL: http://localhost:3000/sse    
 Connected to MCP session for agent: firecrawl
 File 'firecrawl_coral_agent.py' created successfully.
 ```
 
-> **Note**: The Coralizer operates independently of the Coral Server and does not require it to be running to create the coralized agent. However, the Coral Server must be active to run the coralized agent (e.g., `firecrawl_coral_agent.py`) for registration and interaction within the Coral network.
+> **Note**: The Coraliser operates independently of the Coral Server and does not require it to be running to create the coralised agent. However, the Coral Server must be active to run the coralised agent (e.g., `firecrawl_coral_agent.py`) for registration and interaction within the Coral network.
 
 ### 6. Verify the Agent Configuration and Prompt
 
-After running the Coralizer, the created agent must be verified to ensure it integrates correctly with the Coral Server when run. Check the following configuration parameters:
+After running the Coraliser, the created agent must be verified to ensure it integrates correctly with the Coral Server when run. Check the following configuration parameters:
 
 ```python
 coral_base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
@@ -111,7 +111,7 @@ coral_params = {
 - **agentId**: Must be unique (`firecrawl` in this case).
 - **agentDescription**: Verify it aligns with your multi-agent system's requirements. The provided description reflects the Firecrawl agent's capabilities.
 
-Additionally, verify the prompt of the coralized MCP agent to ensure it correctly defines the agent's behavior. The prompt is designed for a generic agent, but you can update it according to your specific task requirements. The default prompt should match the following:
+Additionally, verify the prompt of the coralised MCP agent to ensure it correctly defines the agent's behavior. The prompt is designed for a generic agent, but you can update it according to your specific task requirements. The default prompt should match the following:
 
 ```python
 prompt = ChatPromptTemplate.from_messages([
@@ -145,9 +145,9 @@ This prompt ensures the Firecrawl agent:
 
 If you want the Firecrawl agent to perform specific tasks (e.g., advanced data structuring or targeted web crawling), you can update the prompt to include those requirements while maintaining the same structure.
 
-## How to Run the Coralized Firecrawl MCP Agent Within the Coral Network
+## How to Run the Coralised Firecrawl MCP Agent Within the Coral Network
 
-To enable the coralized Firecrawl MCP agent to interact within the Coral network, follow these steps:
+To enable the coralised Firecrawl MCP agent to interact within the Coral network, follow these steps:
 
 1. **Start the Coral Server**:
    In a terminal, navigate to your project's root directory and start the Coral Server:
@@ -157,7 +157,7 @@ To enable the coralized Firecrawl MCP agent to interact within the Coral network
    Gradle may show "83%" completion but will continue running. Check the terminal logs to confirm the server is active at `http://localhost:5555`.
 
 2. **Run the User Interface Agent and Firecrawl Agent**:
-   To interact with the coralized Firecrawl agent, run the interface agent and the newly created Firecrawl agent in separate terminals (ensure the Python virtual environment is activated in each terminal):
+   To interact with the coralised Firecrawl agent, run the interface agent and the newly created Firecrawl agent in separate terminals (ensure the Python virtual environment is activated in each terminal):
    - **Run the User Interface Agent**:
      ```bash
      cd coral-server/examples/langchain
@@ -165,29 +165,29 @@ To enable the coralized Firecrawl MCP agent to interact within the Coral network
      ```
    - **Run the Firecrawl Agent**:
      ```bash
-     cd coral-server/coralizer
+     cd coral-server/coraliser
      python firecrawl_coral_agent.py
      ```
    Once both agents are running, they will register with the Coral Server, enabling interaction within the Coral network. The `langchain_interface_agent` will prompt for input, allowing you to send queries to the Firecrawl agent.
 
-> **Note**: The Coral Server must be running to run the coralized agent (e.g., `firecrawl_coral_agent.py`) and the interface agent, as they register with the Coral Server upon initialization.
+> **Note**: The Coral Server must be running to run the coralised agent (e.g., `firecrawl_coral_agent.py`) and the interface agent, as they register with the Coral Server upon initialisation.
 
-## How the Coralizer Works
+## How the Coraliser Works
 
 ### Agent Creation and Registration
 
-The Coralizer simplifies the process of turning an SSE-compatible MCP into a Coral agent:
+The Coraliser simplifies the process of turning an SSE-compatible MCP into a Coral agent:
 
-1. **Connection to the MCP SSE**: The Coralizer connects to the Firecrawl MCP's SSE endpoint (e.g., `http://localhost:3000/sse`).
-2. **Requires an Agent Name by the User**: The user provides a unique agent name (e.g., `firecrawl`) when running `coralizer.py`.
-3. **Identifies the Tools and Their Description of the MCP**: The Coralizer analyzes the MCP to identify its available tools and their descriptions (e.g., web scraping and crawling capabilities for Firecrawl).
-4. **Creates an Agent Description Using the Tools**: Based on the identified tools, the Coralizer generates an appropriate agent description (e.g., "You are an firecrawl agent capable of scraping, crawling, and extracting data...").
-5. **Takes a Sample Prompt Within the Utils to Generate the New Agent on LangChain Framework**: The Coralizer uses a sample prompt from the `utils` directory to create a new agent within the LangChain framework, ensuring compatibility with the Coral Server.
-6. **Agent Registration**: Upon running `coralizer.py`, it registers the agent with the Coral Server (when the agent is run) using the provided `agentId` (`firecrawl`) and `agentDescription`. The Coral Server assigns a unique decentralized identifier (DID) to the agent, enabling discovery and interaction within the Coral network.
+1. **Connection to the MCP SSE**: The Coraliser connects to the Firecrawl MCP's SSE endpoint (e.g., `http://localhost:3000/sse`).
+2. **Requires an Agent Name by the User**: The user provides a unique agent name (e.g., `firecrawl`) when running `coraliser.py`.
+3. **Identifies the Tools and Their Description of the MCP**: The Coraliser analyzes the MCP to identify its available tools and their descriptions (e.g., web scraping and crawling capabilities for Firecrawl).
+4. **Creates an Agent Description Using the Tools**: Based on the identified tools, the Coraliser generates an appropriate agent description (e.g., "You are an firecrawl agent capable of scraping, crawling, and extracting data...").
+5. **Takes a Sample Prompt Within the Utils to Generate the New Agent on LangChain Framework**: The Coraliser uses a sample prompt from the `utils` directory to create a new agent within the LangChain framework, ensuring compatibility with the Coral Server.
+6. **Agent Registration**: Upon running `coraliser.py`, it registers the agent with the Coral Server (when the agent is run) using the provided `agentId` (`firecrawl`) and `agentDescription`. The Coral Server assigns a unique decentralised identifier (DID) to the agent, enabling discovery and interaction within the Coral network.
 
 ### Integration with Coral Network
 
-Once coralized, the Firecrawl agent can:
+Once coralised, the Firecrawl agent can:
 - Collaborate with other Coral agents (e.g., `langchain_interface_agent`) via the Coral Server's messaging tools (`list_agents`, `create_thread`, `send_message`, `wait_for_mentions`).
 - Process queries related to web scraping, crawling, or data extraction, leveraging Firecrawl's capabilities.
 - Participate in multi-agent workflows, enhancing the system's overall functionality.
@@ -210,15 +210,15 @@ The `langchain_interface_agent` will identify the `firecrawl` agent, create a th
 
 ## Building on the Example
 
-To coralize a different MCP:
+To coralise a different MCP:
 1. Identify the SSE-compatible MCP and obtain its SSE endpoint.
-2. Run `coralizer.py` with the new agent name and SSE endpoint.
+2. Run `coraliser.py` with the new agent name and SSE endpoint.
 3. Adjust `waitForAgents` based on the number of agents in your system.
 
 ## Future Potential
 
-This demo showcases the Coralizer's ability to integrate the Firecrawl MCP with Coral. Future enhancements could include:
-- **Support for Additional MCPs**: Coralizing other SSE-compatible platforms for broader use cases.
+This demo showcases the Coraliser's ability to integrate the Firecrawl MCP with Coral. Future enhancements could include:
+- **Support for Additional MCPs**: Coralising other SSE-compatible platforms for broader use cases.
 - **Automated Configuration**: Simplifying agent parameter setup for non-technical users.
 - **Enhanced Tooling**: Integrating Firecrawl's advanced features (e.g., structured data generation) into Coral workflows.
 
