@@ -167,7 +167,7 @@ async def create_unit_test_runner_agent(client, tools):
 
         3. Call `list_project_files(project_root)` to get all visible files.
 
-        4. Filter potential test files (e.g., under `tests/` or with `test_*.py` in filename).
+        4. Filter potential test files.
 
         5. Call `read_project_files(project_root, candidate_test_files)` to get file contents.
 
@@ -175,46 +175,25 @@ async def create_unit_test_runner_agent(client, tools):
 
         7. For each matched `test_file_path`, call:
         ```
-
-        run\_test(project\_root, test\_file\_path)
+        run_test(project_root, test_file_path)
 
         ```
         to execute all tests in that file and store the results.
 
-        8. Additionally, for each test file, parse **all available test function names** (e.g., lines like `def test_*`), and compare with those actually executed.
+        8. Send the result using:
+        Call`send_message(senderId: 'unit_test_runner_agent', **mentions: ['user_interaction_agent']**)`
 
-        **Output Format**:
-        Reply using:
-        ```
-
-        Test results summary:
-
-        * File: \[test\_file\_1]
-        ✔ All unit tests run → PASSED
-        Output:
-        \[pytest stdout]
-
-        * File: \[test\_file\_2]
-        ✔ All unit tests run → FAILED
-        Output:
-        \[pytest stdout]
-
-        ```
-
-        9. Send the result using (NEVER forget):
-        **Call`send_message(senderId: 'unit_test_runner_agent', mentions: ['user_interaction_agent'])`**
-
-        10. If the mention format is invalid or missing, continue the loop silently.
+        9. If the mention format is invalid or missing, continue the loop silently.
 
         Do not create threads. Track `threadId` from mentions. Tools: {get_tools_description(tools)}"""),
         ("placeholder", "{agent_scratchpad}")
     ])
 
     model = ChatOpenAI(
-        model="gpt-4.1-2025-04-14",
+        model="gpt-4.1-mini-2025-04-14",
         api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.3,
-        max_tokens=8192  # or 16384, 32768 depending on your needs; for gpt-4o-mini, make sure prompt + history + output < 128k tokens
+        max_tokens=16384  # or 16384, 32768 depending on your needs; for gpt-4o-mini, make sure prompt + history + output < 128k tokens
     )
 
     #model = ChatOllama(model="llama3")
