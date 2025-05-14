@@ -8,9 +8,9 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 
 load_dotenv()
 
-coral_base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
+coral_base_url = os.getenv('coral_base_url')
 coral_params = {
-    "waitForAgents": 2,
+    "waitForAgents": 1,
     "agentId": "",
     "agentDescription": ""
 }
@@ -51,8 +51,8 @@ async def create_agent(coral_tools, agent_tools):
     ])
 
     model = init_chat_model(
-            model="gpt-4o-mini",
-            model_provider="openai",
+            model=os.getenv('llm_model_name'),
+            model_provider=os.getenv('llm_model_provider'),
             api_key=os.getenv("OPENAI_API_KEY"),
             temperature=0.3,
             max_tokens=16000
@@ -62,7 +62,6 @@ async def create_agent(coral_tools, agent_tools):
 
 async def main():
 	CORAL_SERVER_URL = f"{coral_base_url}?{query_string}"
-	MCP_SERVER_URL = ''
 	async with MultiServerMCPClient(
 		connections = {
 			"coral": {
@@ -71,12 +70,7 @@ async def main():
 				"timeout": 300,
 				"sse_read_timeout": 300
 			},
-			"mcp": {
-				"transport": "sse",
-				"url": MCP_SERVER_URL,
-				"timeout": 300,
-				"sse_read_timeout": 300
-			}
+			"mcp": ""
 		}
     ) as multi_connection_client:
 			print("Multi Server Connection Established")
