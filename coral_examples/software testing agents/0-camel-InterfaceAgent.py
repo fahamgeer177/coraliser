@@ -43,7 +43,7 @@ async def main():
 
         # Initialize ChatAgent
         mcp_toolkit = MCPToolkit([coral_server])
-        tools = mcp_toolkit.get_tools() + HumanToolkit().get_tools()
+        tools = mcp_toolkit.get_tools()
         tools_description = await get_tools_description(tools)
 
         sys_msg = (

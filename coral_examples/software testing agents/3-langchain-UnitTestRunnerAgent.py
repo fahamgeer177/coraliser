@@ -143,70 +143,24 @@ def run_test(project_root: str, relative_test_path: str) -> dict:
 
 async def create_unit_test_runner_agent(client, tools):
     prompt = ChatPromptTemplate.from_messages([
-        ("system", f"""You are unit_test_runner_agent, responsible for determining and running appropriate pytest unit tests based on multiple code diffs and a given project root path.
+        ("system", f"""You are `unit_test_runner_agent`, responsible for running relevant pytest tests based on code diffs and a given project root.
 
-        **Initialization**:
-        1. Ensure you are registered using list_agents. If not, register using:
-        register_agent(agentId: 'unit_test_runner_agent', agentName: 'Unit Test Runner Agent', description: 'Determines and runs relevant pytest unit tests given code diffs.')
-
-        **Loop (STRICTLY follow EACH step)**:
-        1. Call wait_for_mentions ONCE (agentId: 'unit_test_runner_agent', timeoutMs: 30000).
-
-        2. For mentions from 'user_interaction_agent' containing:
-        "Please run relevant tests for the following code diffs under project root '[project_root]':
-        File: [diff_filename_1]
-        [diff_snippet_1]
-
-        File: [diff_filename_2]
-        [diff_snippet_2]
-        ...":
-
-        - Extract:
-            - A list of tuples: `[(diff_filename_1, diff_snippet_1), (diff_filename_2, diff_snippet_2), ...]`
-            - `project_root` (absolute path)
-
-        3. Call `list_project_files(project_root)` to get all visible files.
-
-        4. Filter potential test files (e.g., under `tests/` or with `test_*.py` in filename).
-
-        5. Call `read_project_files(project_root, candidate_test_files)` to get file contents.
-
-        6. For each `diff_filename`  that is relevant for unit testing, attempt to find a matching test file using heuristics (e.g., same filename prefix, or files under tests/ that import or reference the same module). In some cases, the test file itself may appear entirely within the diff if it is newly added in the pull request.
-
-        7. For each matched `test_file_path`, call:
-        ```
-
-        run\_test(project\_root, test\_file\_path)
-
-        ```
-        to execute all tests in that file and store the results.
-
-        8. Additionally, for each test file, parse **all available test function names** (e.g., lines like `def test_*`), and compare with those actually executed.
-
-        **Output Format**:
-        Reply using:
-        ```
-
-        Test results summary:
-
-        * File: \[test\_file\_1]
-        ✔ All unit tests run → PASSED
-        Output:
-        \[pytest stdout]
-
-        * File: \[test\_file\_2]
-        ✔ All unit tests run → FAILED
-        Output:
-        \[pytest stdout]
-
-        ```
-
-        9. Send the result using (NEVER forget):
-        **Call`send_message(senderId: 'unit_test_runner_agent', mentions: ['user_interaction_agent'])`**
-
-        10. If the mention format is invalid or missing, continue the loop silently.
-
-        Do not create threads. Track `threadId` from mentions. Tools: {get_tools_description(tools)}"""),
+        1. Use `wait_for_mentions(timeoutMs=30000)` to wait for instructions from other agents.
+        2. When a mention is received, record the `threadId` and `senderId`.
+        3. Check if the message contains a project root and a list of filenames with code diffs.
+        4. Extract the `project_root` and the list of `(filename, diff snippet)` pairs.
+        5. Call `list_project_files(project_root)` to get all files in the project.
+        6. Filter out test files (e.g., in `tests/` folder or starting with `test_`).
+        7. Call `read_project_files(project_root, test_files)` to read their content.
+        8. For each changed file, find related test files using name or import matching.
+        9. For each test file, call `run_test(project_root, test_file_path)` to run tests.
+        10. Collect the test output and compare executed test functions with all defined ones.
+        11. Format a result summary with test outcomes and pytest output.
+        12. Use `send_message(senderId=..., mentions=[senderId], threadId=..., content="answer")` to reply.
+        13. If there's an error, send a message with content `"error"` to the sender.
+        14. Always respond to the sender, even if the result is empty or invalid.
+        15. Wait 2 seconds and repeat from step 1. 
+        Tools: {get_tools_description(tools)}"""),
         ("placeholder", "{agent_scratchpad}")
     ])
 

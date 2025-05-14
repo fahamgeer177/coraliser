@@ -45,114 +45,24 @@ async def create_interface_agent(client, tools):
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            f"""You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents.
+            f"""You are an agent interacting with the tools from Coral Server and using your own `ask_human` tool to communicate with the user.
 
-            **Initialization**:
-            1. Call list_agents (includeDetails: True) to check registration of 'user_interaction_agent'.  
-            If not registered, call:  
-            register_agent(agentId: 'user_interaction_agent', agentName: 'User Interaction Agent', description: 'Handles user instructions and coordinates testing tasks.')  
-            Retry once on failure. If it fails again, send a message to the thread: 'Error checking agent registration.'
+            Follow these steps in order:
 
-            2. Create a thread using create_thread (threadName: 'User Interaction Thread', creatorId: 'user_interaction_agent', participantIds: ['user_interaction_agent']).  
-            Store threadId. Retry once on failure. If it fails again, stop and report: 'Error creating thread.'
-
-            3. Send message: 'I am ready to receive testing instructions.' Retry once. If failed again, send: 'Error sending readiness message.'
-
-            ---
-
-            **Loop (STRICTLY follow each step, NEVER skip any step)**:
-
-            1. Use ask_human to ask:  
-            'Please tell me the GitHub repo (e.g., owner/repo) and the PR number to test.'
-
-            2. After receiving the human reply, extract:
-            - `repo_name` (e.g., 'octocat/calculator')
-            - `pr_number` (e.g., 42)
-
-            3. Check and add the following agents if needed:
-            - 'gitclone_agent' → call add_participant. On failure, send: 'Error adding Git Clone Agent.'
-            - 'codediff_review_agent' → call add_participant. On failure, send: 'Error adding Code Diff Review Agent.'
-            - 'unit_test_runner_agent' → call add_participant. On failure, send: 'Error adding Unit Test Runner Agent.'
-
-            4. Send message to `gitclone_agent`:  
-            "Checkout PR #[pr_number] from '[repo_name]'".  
-            Use send_message (senderId: 'user_interaction_agent', mentions: ['gitclone_agent']).
-
-            5. KEEP calling wait_for_mentions (agentId: 'user_interaction_agent', timeoutMs: 30000) until messages are received.  
-            - If no messages after 3 attempts, send: 'No response from gitclone_agent.'  
-            - Extract the `Local path: [repo_path]` from the response. Store as `project_root`.
-
-            6. Send message to `codediff_review_agent`:  
-            "Analyze PR #[pr_number] from '[repo_name]'".  
-            Use send_message (senderId: 'user_interaction_agent', mentions: ['codediff_review_agent']).
-
-            7. KEEP calling wait_for_mentions (agentId: 'user_interaction_agent', timeoutMs: 30000) until messages are received.  
-            - If no messages after 3 attempts, send: 'No response from codediff_review_agent.'  
-            - Extract a list of (filename, patch snippet) pairs, e.g.:
-                ```
-                File: calculator.py
-                +def multiply(x, y): return x * y
-
-                File: utils/math.py
-                +def square(x): return x ** 2
-                ```
-
-            8. Send message to `unit_test_runner_agent`:  
-            "Please run relevant tests for the following code diffs under project root '[project_root]':
-
-            File: [filename_1]
-            [patch_1]
-
-            File: [filename_2]
-            [patch_2]
-            "  
-            Use send_message (senderId: 'user_interaction_agent', mentions: ['unit_test_runner_agent']).
-
-            9. KEEP calling wait_for_mentions (agentId: 'user_interaction_agent', timeoutMs: 30000) until messages are received.  
-            - If no messages after 3 attempts, send: 'No response from unit_test_runner_agent.'  
-            - Extract full structured test report:
-                - Which test functions were run, their pass/fail status and outputs;
-                - Which test functions were skipped and not covered.
-
-            10. Format the result using this structure:
-            ````
-
-            Test results summary:
-
-            * File: \[test\_file\_1]
-            ✔ Run: test\_func\_1 → PASSED
-            Output:
-            \[pytest stdout]
-
-            ✘ Skipped: test\_func\_2, test\_func\_3 (Not triggered by current code changes)
-
-            * File: \[test\_file\_2]
-            ✔ Run: test\_func\_x → FAILED
-            Output:
-            \[pytest stdout]
-
-            ```
-
-            11. Send the result to the thread using send_message (content: [formatted results], mentions: []).  
-            Retry once. If it fails again, send: 'Error sending test results.'
-
-            12. Send a confirmation message using send_message (content: 'Task completed.', mentions: []).  
-            Retry once. If it fails again, send: 'Error sending task completion message.'
-
-            13. Return to step 1.
-
-            ---
-
-            **For any other instruction**:
-            - If message is 'list agents' or similar, call list_agents and report results.
-            - If message is 'close thread', close the current thread and re-create a new one. Continue interaction in the new thread.
-            - If input is empty or invalid, reply: 'No valid instructions received.'
-
-            ---
-
-            **Notes**:
-            - Cache agent list after list_agents and reuse across loop iterations.
-            - Track threadId persistently.
+            1. Use `list_agents` to list all connected agents and get their descriptions.
+            2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
+            3. Take 2 seconds to understand the user's intent and decide which agent(s) are needed based on their descriptions.
+            4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
+            5. If fulfilling the request requires multiple agents, determine the sequence and logic for calling them.
+            6. For each selected agent:
+            * If a conversation thread with the agent does not exist, use `create_thread` to create one.
+            * Construct a clear instruction message for the agent.
+            * Use `send_message` in the corresponding thread, mentioning the agent, with content: "instruction".
+            * Use `wait_for_mentions(timeoutMs=30000)` to receive the agent's response.
+            * Record and store the response for final presentation.
+            7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
+            8. Wait for 3 seconds, then use `ask_human` to ask: "Is there anything else I can help you with?"
+            9. If the user replies with a new request, repeat the process from Step 1.
             - Use only tools: {tools_description}"""),
         ("placeholder", "{agent_scratchpad}")
     ])
