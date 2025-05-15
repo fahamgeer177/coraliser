@@ -10,18 +10,18 @@ Compared to the earlier version, this implementation is more general: it support
 
 The system consists of four cooperating agents, each with a specific responsibility:
 
-* **Interface Agent**
+* **Interface Agent (Implemented using LangChain)**
   Accepts user instructions, manages the workflow, and coordinates other agents.
 
-* **GitCloneAgent**
+* **GitCloneAgent  (Implemented using Crew)**
   Clones the GitHub repository and checks out the specific pull request branch.
   → Uses the `checkout_github_pr` tool to clone the repo and check out the PR branch using `git` commands.
 
-* **CodeDiffReviewAgent**
+* **CodeDiffReviewAgent (Implemented using Camel)**
   Analyzes the PR diff, identifies the changed function, maps it to the corresponding test function, and locates the test file path.
   → Uses the `get_pr_code_changes` tool built on top of the GitHub API via `PyGithub` to fetch the code diffs of the PR.
 
-* **UnitTestRunnerAgent**
+* **UnitTestRunnerAgent (Implemented using LangChain)**
   Runs the specified unit test using `pytest` and returns structured test results.
   → Uses three tools:
 
