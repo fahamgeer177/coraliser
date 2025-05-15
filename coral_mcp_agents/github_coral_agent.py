@@ -8,11 +8,11 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 
 load_dotenv()
 
-coral_base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
+coral_base_url = os.getenv('coral_base_url')
 coral_params = {
-    "waitForAgents": 2,
-    "agentId": "aci",
-    "agentDescription": "You are an aci agent capable of searching for relevant functions based on user intent and executing those functions with the required parameters."
+    "waitForAgents": 1,
+    "agentId": "github",
+    "agentDescription": "You are a GitHub agent capable of managing repositories, including creating, updating, and searching for repositories and files, handling issues and pull requests, and facilitating collaboration through comments and reviews."
 }
 
 query_string = urllib.parse.urlencode(coral_params)
@@ -51,8 +51,8 @@ async def create_agent(coral_tools, agent_tools):
     ])
 
     model = init_chat_model(
-            model="gpt-4o-mini",
-            model_provider="openai",
+            model=os.getenv('llm_model_name'),
+            model_provider=os.getenv('llm_model_provider'),
             api_key=os.getenv("OPENAI_API_KEY"),
             temperature=0.3,
             max_tokens=16000
@@ -62,7 +62,6 @@ async def create_agent(coral_tools, agent_tools):
 
 async def main():
 	CORAL_SERVER_URL = f"{coral_base_url}?{query_string}"
-	MCP_SERVER_URL = 'http://localhost:8000/sse'
 	async with MultiServerMCPClient(
 		connections = {
 			"coral": {
@@ -71,16 +70,11 @@ async def main():
 				"timeout": 300,
 				"sse_read_timeout": 300
 			},
-			"mcp": {
-				"transport": "sse",
-				"url": MCP_SERVER_URL,
-				"timeout": 300,
-				"sse_read_timeout": 300
-			}
+			"github": {"command": 'npx', "args": ['-y', '@modelcontextprotocol/server-github'], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")}}
 		}
     ) as multi_connection_client:
 			print("Multi Server Connection Established")
-			agent_tools = multi_connection_client.server_name_to_tools['mcp']
+			agent_tools = multi_connection_client.server_name_to_tools['github']
 			coral_tools = multi_connection_client.server_name_to_tools['coral']
 			print(f"Coral tools count: {len(coral_tools)} and agent tools count: {len(agent_tools)}")
 			
