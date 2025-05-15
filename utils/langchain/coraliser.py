@@ -1,7 +1,7 @@
 import asyncio
 import traceback, json, copy, os
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from langchain.chat_models import init_chat_model
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 load_dotenv()
@@ -37,22 +37,34 @@ class AgentGenerator:
             f"The description must always start with `You are an {self.agent_name} agent capable of...`"
             "{\"description\": \"<insert your concise summary here>\"}"
         )
-        openai_helper = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0,
+
+        llm_helper = init_chat_model(
+            model=os.getenv('llm_model_name'),
+            model_provider=os.getenv('llm_model_provider'),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            temperature=0.3,
+            max_tokens=16000,
             model_kwargs={"response_format": {"type": "json_object"}}
         )
 
-        response = openai_helper.invoke(system_prompt)
+        response = llm_helper.invoke(system_prompt)
         response = response.content
         description = json.loads(response)["description"]
         print(f"Generated description: {description}")
 
         return description
 
+    def get_env_or_raise(self, key):
+        val = os.getenv(key)
+        if not val:
+            raise EnvironmentError(f'Missing required environment variable: {key}')
+        return val
+
     async def check_connection(self):
         try:
             mcp_object = self.get_agent_config()
+            if "env" in mcp_object:
+                mcp_object['env'] = {key: self.get_env_or_raise(key) for key in mcp_object['env']}
             print(f"Checking connection with the MCP: {self.agent_name}")
             async with MultiServerMCPClient(connections={self.agent_name: mcp_object}) as client:
                 self.client = client
@@ -65,7 +77,22 @@ class AgentGenerator:
     
     def create_agent(self, agent_description):
 	
+        items = []
+        env_code_str = None
         mcp_object = self.get_agent_config()
+
+        for key, val in mcp_object.items():
+            if key == "env":
+                env_code_str = "{" + ", ".join(
+                    f'"{k}": os.getenv("{k}")' for k in val
+                ) + "}"
+                val_str = env_code_str
+            else:
+                val_str = repr(val)
+            items.append(f'"{key}": {val_str}')
+
+        mcp_dict_code = f'"{self.agent_name}": {{' + ", ".join(items) + "}"
+
         base_dir = os.path.dirname(__file__)
         coraliser_path = os.path.join(base_dir, 'base_coraliser.py')
         with open(coraliser_path, 'r') as py_file:
@@ -73,7 +100,7 @@ class AgentGenerator:
         
         base_code = base_code.replace('"agentId": "",', f'"agentId": "{self.agent_name}",')
         base_code = base_code.replace('"agentDescription": ""', f'"agentDescription": "{agent_description}"')
-        base_code = base_code.replace('"mcp": ""', f'"{self.agent_name}": {json.dumps(mcp_object)}')
+        base_code = base_code.replace('"mcp": ""', mcp_dict_code)
         base_code = base_code.replace("agent_tools = multi_connection_client.server_name_to_tools['mcp']",
                                       f"agent_tools = multi_connection_client.server_name_to_tools['{self.agent_name}']")
 
@@ -103,7 +130,6 @@ async def main():
         except Exception as e:
             print(f"Failed creating coralised agent: {e}")
             print(traceback.format_exc())
-            break
 
 if __name__ == "__main__":
     asyncio.run(main())
