@@ -7,7 +7,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain.tools import Tool
-from langchain_ollama.chat_models import ChatOllama
 from dotenv import load_dotenv
 from anyio import ClosedResourceError
 import urllib.parse
