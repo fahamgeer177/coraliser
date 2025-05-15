@@ -1,6 +1,6 @@
 # Software Testing Agents with LangChain, Camel, and Crew.
 
-This example demonstrates a multi-agent software testing system built using LangChain and the Coral Protocol. Agents collaborate to fetch, analyze, and test pull requests (PRs) against existing unit tests in any compatible GitHub repository.
+This example demonstrates a multi-agent software testing system built using Coral Protocol with 3 different frameworks' agents -- LangChain, Camel, and Crew. Agents collaborate to fetch, analyze, and test pull requests (PRs) against existing unit tests in any compatible GitHub repository.
 
 Compared to the earlier version, this implementation is more general: it supports running tests on PRs from much various repositories. For example, you can use it to test PRs from your own forked repositories such as [https://github.com/renxinxing123/camel-software-testing](https://github.com/renxinxing123/camel-software-testing). The system is designed as a minimal but extensible prototype, and it can be adapted to handle more complex codebases.
 
