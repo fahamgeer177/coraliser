@@ -172,11 +172,11 @@ async def main():
 
                         1. Use `wait_for_mentions(timeoutMs=29000)` to wait for instructions from other agents.
                         2. When a mention is received, record the `threadId` and `senderId`.
-                        9383;3. Check if the message asks to checkout a PR with a given repo name and PR number.
+                        3. Check if the message asks to checkout a PR with a given repo name and PR number.
                         4. Extract `repo` and `pr_number` from the message.
                         5. Call `checkout_github_pr(repo_full_name=repo, pr_number=pr_number)` to clone and checkout the PR.
-                        6. If the call is successful, send a message saying the PR was checked out with the local path.
-                        7. If the call fails, send the error message using `send_message` to the sender.
+                        6. If the call is successful, send a message on the same 'threadId' saying the PR was checked out with the root path to 'user_interaction_agent'.
+                        7. If the call fails, send the error message using `send_message` to the 'user_interaction_agent'.
                         8. If the message format is invalid or incomplete, skip it silently.
                         9. Do not create threads; always use the `threadId` from the mention.
                         10. Wait 2 seconds and repeat from step 1.

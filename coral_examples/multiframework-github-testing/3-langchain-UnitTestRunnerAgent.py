@@ -146,7 +146,7 @@ async def create_unit_test_runner_agent(client, tools):
 
         1. Use `wait_for_mentions(timeoutMs=30000)` to wait for instructions from other agents.
         2. When a mention is received, record the `threadId` and `senderId`.
-        3. Check if the message contains a project root and a list of filenames with code diffs.
+        3. Check if the message contains a project root path and a list of filenames with code diffs.
         4. Extract the `project_root` and the list of `(filename, diff snippet)` pairs.
         5. Call `list_project_files(project_root)` to get all files in the project.
         6. Filter out test files (e.g., in `tests/` folder or starting with `test_`).
