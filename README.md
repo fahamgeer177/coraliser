@@ -5,7 +5,7 @@
 
 Coraliser is a powerful tool that streamlines the integration of any MCP server with the Coral Server. By simply providing a `coraliser_settings.json` file containing connection details for multiple MCP servers and executing `coraliser.py`, Coraliser automates the entire setup. It generates Coral-compatible agents that are immediately ready to operate within the Coral network, eliminating the need for manual wiring or complex configurations.
 
-In this demo, we are **coralising the Firecrawl and GitHub MCP**, enabling them to operate as Coral agents.
+In this demo, we are **coralising the Firecrawl and GitHub MCPs**, enabling them to operate as Coral agents.
 
 ## Why Coraliser?
 
