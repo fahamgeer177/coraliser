@@ -1,20 +1,25 @@
 {
   "mcpServers": {
     "github": {
-      "command": "npx",
+      "command": "docker",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
       ],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token}"
       }
     },
-    "firecrawl": {
-        "transport": "sse",
-        "url": "http://localhost:3000/sse",
-        "timeout": 300,
-        "sse_read_timeout": 300
+    "firecrawl-mcp": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "YOUR-API-KEY"
+      }
     }
   }
 }
