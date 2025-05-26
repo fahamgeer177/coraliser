@@ -77,4 +77,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-Visit - 'https://www.coralprotocol.org/' for more information.
+https://www.coralprotocol.org/
