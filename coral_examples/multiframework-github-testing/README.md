@@ -19,7 +19,7 @@ The system consists of four cooperating agents, each with a specific responsibil
 
 * **CodeDiffReviewAgent (Implemented using Camel)**
   Analyzes the PR diff, identifies the changed function, maps it to the corresponding test function, and locates the test file path.
-  → Uses the `get_pr_code_changes` tool built on top of the GitHub API via `PyGithub` to fetch the code diffs of the PR.
+  → Uses the `get_pull_request_files` tool from GitHub MCP to fetch the code diffs of the PR.
 
 * **UnitTestRunnerAgent (Implemented using LangChain)**
   Runs the specified unit test using `pytest` and returns structured test results.
