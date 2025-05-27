@@ -20,14 +20,15 @@ load_dotenv()
 # Validate API keys and tokens
 if not os.getenv("OPENAI_API_KEY"):
     raise ValueError("OPENAI_API_KEY is not set in environment variables.")
-if not os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN"):
-    raise ValueError("GITHUB_PERSONAL_ACCESS_TOKEN is not set in environment variables.")
+if not os.getenv("GITHUB_ACCESS_TOKEN"):
+    raise ValueError("GITHUB_ACCESS_TOKEN is not set in environment variables.")
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 4,
+    "waitForAgents": 6,
     "agentId": "codediff_review_agent",
-    "agentDescription": "You are codediff_review_agent, responsible for analyzing code changes in GitHub Pull Requests and identifying which functions have been modified, which tests should be executed, and where those tests are located in the repository."
+    "agentDescription": """I am a `codediff_review_agent`, responsible for retrieving and formatting code diffs from a GitHub pull request. 
+                           You should let me know the `repo_name` and `pr_number`"""
 }
 query_string = urllib.parse.urlencode(params)
 MCP_SERVER_URL = f"{base_url}?{query_string}"
@@ -42,7 +43,7 @@ async def connect_client():
     )
     
     # Initialize github_client
-    github_token = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
+    github_token = os.getenv("GITHUB_ACCESS_TOKEN")
     github_client = MCPClient(
         command_or_url="docker",
         args=[
@@ -78,27 +79,27 @@ async def create_codediff_agent(toolkit):
     tools = toolkit.get_tools()
     tools_description = await get_tools_description(tools)
     sys_msg = (
-        f"""You are codediff_review_agent, responsible for retrieving and formatting code diffs from a GitHub pull request.
-            Follow these steps in order:
-            1. Use wait_for_mentions(timeoutMs=30000) to wait for instructions from other agents.
-            2. When a mention is received, record the threadId and senderId.
-            3. Check if the message asks to analyze a PR with a repo name and PR number.
-            4. Extract repo_name and pr_number from the message.,
-            5. Call get_pull_request_files(pullNumber=pr_number, repo=repo_name) to get code diffs.,
-            6. If this call fails, send the error message using send_message to the sender.,
-            7. If successful, send the formatted code diffs using send_message to the sender.,
-            8. If the message format is invalid or parsing fails, skip it silently.,
-            9. Do not create threads; always use the threadId from the mention.,
-            10. Wait 2 seconds and repeat from step 1.
+        f"""You are `codediff_review_agent`, responsible for retrieving and formatting code diffs from a GitHub pull request.
+
+        1. Use `wait_for_mentions(timeoutMs=60000)` to wait for instructions from other agents.
+        2. When a mention is received, record the `threadId` and `senderId`.
+        3. Check if the message asks to analyze a PR with a repo name and PR number.
+        4. Extract `repo_name` and `pr_number` from the message.
+        5. Call `get_pull_request_files(pullNumber=pr_number, repo=repo_name)` to get code diffs.
+        6. If this call fails, send the error message using `send_message` to the sender.
+        7. If successful, send the formatted code diffs using `send_message` to the sender.
+        8. If the message format is invalid or parsing fails, skip it silently.
+        9. Do not create threads; always use the `threadId` from the mention.
+        10. Wait 2 seconds and repeat from step 1. 
 
         These are the list of all tools: {tools_description}"""
     )
 
     model = ModelFactory.create(
         model_platform=ModelPlatformType.OPENAI,
-        model_type=ModelType.GPT_4O_MINI,
+        model_type=ModelType.GPT_4_1,
         api_key=os.getenv("OPENAI_API_KEY"),
-        model_config_dict={"temperature": 0.3, "max_tokens": 16000},
+        model_config_dict={"temperature": 0.3, "max_tokens": 32147},
     )
     
     agent = ChatAgent(

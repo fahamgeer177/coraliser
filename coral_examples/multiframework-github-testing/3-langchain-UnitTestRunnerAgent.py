@@ -3,8 +3,6 @@ import os
 import json
 import logging
 import subprocess
-import sys
-import re
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -24,9 +22,10 @@ load_dotenv()
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 4,
+    "waitForAgents": 6,
     "agentId": "unit_test_runner_agent",
-    "agentDescription": "You are unit_test_runner_agent, responsible for executing a specific pytest test based on function name"
+    "agentDescription": """I am a `unit_test_runner_agent`, responsible for running relevant pytest tests based on code diffs. 
+                           You should let me know the local root path of the project and the code diffs of the PR."""
 }
 query_string = urllib.parse.urlencode(params)
 MCP_SERVER_URL = f"{base_url}?{query_string}"
@@ -144,12 +143,12 @@ async def create_unit_test_runner_agent(client, tools):
     prompt = ChatPromptTemplate.from_messages([
         ("system", f"""You are `unit_test_runner_agent`, responsible for running relevant pytest tests based on code diffs and a given project root.
 
-        1. Use `wait_for_mentions(timeoutMs=30000)` to wait for instructions from other agents.
+        1. Use `wait_for_mentions(timeoutMs=60000)` to wait for instructions from other agents.
         2. When a mention is received, record the `threadId` and `senderId`.
-        3. Check if the message contains a project root path and a list of filenames with code diffs.
-        4. Extract the `project_root` and the list of `(filename, diff snippet)` pairs.
+        3. Check if the message contains a project root and a list of filenames with code diffs.
+        4. Extract the `project_root` and the list of `(filename, diff snippet)` pairs, call `send_message(senderId=..., mentions=[senderId], threadId=..)` if any information was lack.
         5. Call `list_project_files(project_root)` to get all files in the project.
-        6. Filter out test files (e.g., in `tests/` folder or starting with `test_`).
+        6. Filter out test files related to the list of filenames with code diffs.
         7. Call `read_project_files(project_root, test_files)` to read their content.
         8. For each changed file, find related test files using name or import matching.
         9. For each test file, call `run_test(project_root, test_file_path)` to run tests.
@@ -173,7 +172,7 @@ async def create_unit_test_runner_agent(client, tools):
     #model = ChatOllama(model="llama3")
 
     agent = create_tool_calling_agent(model, tools, prompt)
-    return AgentExecutor(agent=agent, tools=tools, verbose=True)
+    return AgentExecutor(agent=agent, tools=tools, max_iterations=100, verbose=True)
 
 async def main():
     retry_delay = 5  # seconds
@@ -183,7 +182,7 @@ async def main():
     while retries > 0:
         try:
             async with MultiServerMCPClient(connections={
-                "coral": {"transport": "sse", "url": MCP_SERVER_URL, "timeout": 30, "sse_read_timeout": 60}
+                "coral": {"transport": "sse", "url": MCP_SERVER_URL, "timeout": 300, "sse_read_timeout": 300}
             }) as client:
                 tools = client.get_tools() + [run_test, list_project_files, read_project_files]
                 logger.info(f"Connected to MCP server. Tools:\n{get_tools_description(tools)}")

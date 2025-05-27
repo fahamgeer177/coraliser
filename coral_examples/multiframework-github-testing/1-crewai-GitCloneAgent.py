@@ -4,7 +4,6 @@ import logging
 import subprocess
 import traceback
 import asyncio
-from typing import List, Dict
 import urllib.parse
 from dotenv import load_dotenv
 
@@ -26,9 +25,12 @@ print("Environment variables loaded")
 # MCP Server configuration
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 4,
+    "waitForAgents": 6,
     "agentId": "gitclone_agent",
-    "agentDescription": "You are gitclone_agent, responsible for cloning a GitHub repository and checking out the branch associated with a specific pull request."
+    "agentDescription": """I am responsible for cloning GitHub repositories and checking out branches associated with specific pull requests, 
+                           only call me when you need to execute some local opperation. 
+                           You should let me know the repo name and the pr number, 
+                           I will let you know the local root path of the project"""
 }
 query_string = urllib.parse.urlencode(params)
 MCP_SERVER_URL = f"{base_url}?{query_string}"
@@ -112,7 +114,7 @@ def checkout_github_pr(repo_full_name: str, pr_number: int) -> str:
         print(f"ERROR: {error_message}")
         traceback.print_exc()
         return f"Error: {error_message}"
-
+        
 async def get_tools_description(tools):
     descriptions = []
     for tool in tools:
@@ -129,7 +131,7 @@ async def get_tools_description(tools):
 async def setup_components():
     # Load LLM
     llm = LLM(
-        model="openai/gpt-4.1-mini-2025-04-14",
+        model="openai/gpt-4.1-2025-04-14",
         temperature=0.3,
         max_tokens=8192
     )
@@ -137,8 +139,7 @@ async def setup_components():
     serverparams = {"url": MCP_SERVER_URL}
     mcp_server_adapter = MCPServerAdapter(serverparams)
     mcp_tools = mcp_server_adapter.tools
-    agent_tools= mcp_tools + [checkout_github_pr]
-    
+    agent_tools = mcp_tools + [checkout_github_pr]
 
     # GitClone Agent
     gitclone_agent = Agent(
@@ -159,32 +160,33 @@ async def main():
     retries = max_retries
 
     print("Initializing GitClone system...")
-    gitclone_agent, agent_tools= await setup_components()
+    gitclone_agent, agent_tools = await setup_components()
     tools_description = await get_tools_description(agent_tools)
     print(tools_description)
+
 
     while True:
         try:
             print("Creating new task and crew...")
 
             task = Task(
-            description=f"""You are `gitclone_agent`, responsible for cloning a GitHub repository and checking out the branch for a specific pull request.
+                description="""You are `gitclone_agent`, responsible for cloning a GitHub repository and checking out the branch for a specific pull request.
 
-                        1. Use `wait_for_mentions(timeoutMs=29000)` to wait for instructions from other agents.
-                        2. When a mention is received, record the `threadId` and `senderId`.
-                        3. Check if the message asks to checkout a PR with a given repo name and PR number.
-                        4. Extract `repo` and `pr_number` from the message.
-                        5. Call `checkout_github_pr(repo_full_name=repo, pr_number=pr_number)` to clone and checkout the PR.
-                        6. If the call is successful, send a message on the same 'threadId' saying the PR was checked out with the root path to 'user_interaction_agent'.
-                        7. If the call fails, send the error message using `send_message` to the 'user_interaction_agent'.
-                        8. If the message format is invalid or incomplete, skip it silently.
-                        9. Do not create threads; always use the `threadId` from the mention.
-                        10. Wait 2 seconds and repeat from step 1.
-                        These are the list of all tools: {tools_description}
-                        """,
-            agent=gitclone_agent,
-            expected_output="Successfully checked out PR branch and provided the local repository path",
-            async_execution=True
+                1. Use `wait_for_mentions(timeoutMs=60000)` to wait for instructions from other agents.
+                2. When a mention is received, record the `threadId` and `senderId`.
+                3. Check if the message asks to checkout a PR with a given repo name and PR number.
+                4. Extract `repo` and `pr_number` from the message.
+                5. Call `checkout_github_pr(repo_full_name=repo, pr_number=pr_number)` to clone and checkout the PR.
+                6. If the call is successful, send a message using `send_message` to the sender, saying the PR was checked out with the local path.
+                7. If the call fails, send the error message using `send_message` to the sender.
+                8. If the message format is invalid or incomplete, skip it silently.
+                9. Do not create threads; always use the `threadId` from the mention.
+                10. Wait 2 seconds and repeat from step 1.
+                These are the list of all tools: {tools_description}
+                """,
+                agent=gitclone_agent,
+                expected_output="Successfully checked out PR branch and provided the local repository path",
+                async_execution=True
             )
 
             crew = Crew(
@@ -198,7 +200,7 @@ async def main():
             result = crew.kickoff()
             print(f"Crew execution completed with result: {result}")
 
-            await asyncio.sleep(3)
+            await asyncio.sleep(1)
 
         except Exception as e:
             retries -= 1

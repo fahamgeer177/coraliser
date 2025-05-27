@@ -1,63 +1,70 @@
-# Software Testing Agents with LangChain, Camel, and Crew.
+# Software Testing Agents with LangChain, Camel, and Crew
 
-This example demonstrates a multi-agent software testing system built using Coral Protocol with 3 different frameworks' agents -- LangChain, Camel, and Crew. Agents collaborate to fetch, analyze, and test pull requests (PRs) against existing unit tests in any compatible GitHub repository.
+This project demonstrates a **multi-agent software testing system** built using Coral Protocol, supporting agents from three different frameworks—LangChain, Camel, and Crew. The system enables automatic understanding of codebases, pull request testing, and test coverage analysis in any compatible GitHub repository.
+---
 
-Compared to the earlier version, this implementation is more general: it supports running tests on PRs from much various repositories. For example, you can use it to test PRs from your own forked repositories such as [https://github.com/renxinxing123/camel-software-testing](https://github.com/renxinxing123/camel-software-testing). The system is designed as a minimal but extensible prototype, and it can be adapted to handle more complex codebases.
+## ✨ Key Features
+
+This project currently supports **three main functionalities**:
+
+1. **Comprehensive Repository Understanding**
+   Automatically analyzes a GitHub repository and provides high-level summaries and usage instructions.
+
+2. **Unit Test Execution for New PRs**
+   Automatically runs unit tests related to code changes in new pull requests.
+
+3. **Unit Test Coverage Evaluation for New PRs**
+   Reviews code changes in a pull request and evaluates whether all necessary cases are covered by existing unit tests, suggesting improvements if needed.
 
 ---
 
 ## Overview of Agents
 
-The system consists of four cooperating agents, each with a specific responsibility:
+The system consists of six cooperating agents, each with a specific responsibility:
 
-* **Interface Agent (Implemented using LangChain)**
-  Accepts user instructions, manages the workflow, and coordinates other agents.
+* **Interface Agent (LangChain):**
+  Accepts user instructions, manages workflow, and coordinates other agents.
 
-* **GitCloneAgent  (Implemented using Crew)**
-  Clones the GitHub repository and checks out the specific pull request branch.
-  → Uses the `checkout_github_pr` tool to clone the repo and check out the PR branch using `git` commands.
+* **GitCloneAgent (Crew):**
+  Clones the GitHub repository and checks out the specified pull request branch.
 
-* **CodeDiffReviewAgent (Implemented using Camel)**
-  Analyzes the PR diff, identifies the changed function, maps it to the corresponding test function, and locates the test file path.
-  → Uses the `get_pull_request_files` tool from GitHub MCP to fetch the code diffs of the PR.
+* **CodeDiffReviewAgent (Camel):**
+  Analyzes the PR diff, identifies changed functions, maps to corresponding tests, and locates relevant test files.
 
-* **UnitTestRunnerAgent (Implemented using LangChain)**
-  Runs the specified unit test using `pytest` and returns structured test results.
-  → Uses three tools:
+* **UnitTestRunnerAgent (LangChain):**
+  Runs specified unit tests using `pytest` and returns structured results.
 
-  * `list_project_files` to enumerate all project files,
-  * `read_project_files` to read test source code,
-  * `run_test` to execute the selected test with `pytest` and capture structured output.
+* **RepoUnderstandingAgent (LangChain):**
+  Analyzes the entire repository, providing comprehensive summaries and usage instructions.
+
+* **RepoUnitTestAdvisorAgent (LangChain):**
+  Assesses whether new PRs are sufficiently covered by existing unit tests, and recommends additional tests if necessary.
 
 ---
 
 ## Prerequisites
 
-Before running this project, clone the [Coral MCP server](https://github.com/Coral-Protocol/coral-server):
+* Clone the [Coral MCP server](https://github.com/Coral-Protocol/coral-server):
 
-```bash
-git clone https://github.com/Coral-Protocol/coral-server.git
-```
-
-Make sure you have:
-
-* Python 3.9 or above
-* A valid `OPENAI_API_KEY` exported in your environment
-* A valid `GITHUB_ACCESS_TOKEN` exported in your environment
+  ```bash
+  git clone https://github.com/Coral-Protocol/coral-server.git
+  ```
+* Python 3.10 or above
+* Export a valid `OPENAI_API_KEY` and `GITHUB_ACCESS_TOKEN` in your environment
 
 ---
 
-## Running the Example
-
-### 1. Install Dependencies
+## Installation
 
 ```bash
-pip install langchain-mcp-adapters langchain-openai worldnewsapi langchain langchain-core PyGithub
+pip install langchain-mcp-adapters langchain-openai langchain langchain-core PyGithub
 ```
 
 ---
 
-### 2. Start the MCP Server
+## Getting Started
+
+### 1. Start the MCP Server
 
 Navigate to the `coral-server` directory and run:
 
@@ -65,85 +72,91 @@ Navigate to the `coral-server` directory and run:
 ./gradlew run
 ```
 
-Note: Gradle may appear to stall at 83%, but the server is running. Check terminal logs to confirm.
+> Note: Gradle may appear to stall at 83%, but the server is running. Check terminal logs to confirm.
 
 ---
 
-### 3. Launch Agents (in four separate terminals)
+### 2. Launch Agents (in six separate terminals)
 
 ```bash
 # Terminal 1: Interface Agent
 python 0-langchain-interface.py
-```
 
-```bash
 # Terminal 2: GitClone Agent
 python 1-crewai-GitCloneAgent.py
-```
 
-```bash
 # Terminal 3: CodeDiffReview Agent
 python 2-camel-CodeDiffReviewAgent.py
-```
 
-```bash
 # Terminal 4: UnitTestRunner Agent
 python 3-langchain-UnitTestRunnerAgent.py
+
+# Terminal 5: RepoUnderstanding Agent
+python 4-langchain-RepoUnderstandingAgent.py
+
+# Terminal 6: RepoUnitTestAdvisor Agent
+python 5-langchain-RepoUnitTestAdvisorAgent.py
 ```
 
 ---
 
-### 4. Interact with the System
+## Usage Examples
 
-Once all agents are running, interact with the Interface Agent via standard input.
+### 1. **Repository Understanding**
 
-Example instructions:
+Ask the Interface Agent for a comprehensive summary of a repository:
 
 ```
+Please give me a comprehensive instruction of Coral-Protocol/coraliser.
+```
 
+Or specify a branch:
+
+```
+Please give me a comprehensive instruction of the master branch of Coral-Protocol/coral-server.
+```
+
+Or for other public repositories:
+
+```
+Please give me a comprehensive instruction of the master branch of camel-ai/camel.
+```
+
+---
+
+### 2. **Unit Test Execution for New PRs**
+
+Ask the system to execute all relevant unit tests for a PR:
+
+```
 Please execute the unit test for the '6' PR in repo 'renxinxing123/software-testing-code'.
-
-```
-
-In this example, since multiple files were modified, the Software Testing Agents identified all relevant unit test file and executed the full set of unit tests defined in this files.
-
-```
-
-Please execute the unit test for the '7' PR in repo 'renxinxing123/software-testing-code'.
-
-```
-
-Here, although only a subset of files were changed, the system still ran **all test cases in each matched test file**. It no longer attempts to identify and run individual unit test functions, but instead executes full file for more reliable coverage and simpler logic.
-
-```
-
-Please execute the unit test for the '1' PR in repo 'renxinxing123/camel-software-testing'.
-
-```
-
-```
-
 Please execute the unit test for the '2' PR in repo 'renxinxing123/camel-software-testing'.
-
 ```
-
-These two demonstrates that the agents can also handle PRs from other compatible repositories. The system will analyze the diffs, locate the relevant unit test file, and run all unit tests found in it.
-
 
 ---
 
+### 3. **Unit Test Coverage Evaluation**
+
+Ask the system to evaluate whether a PR’s changes are fully covered by tests:
+
+```
+I created a new branch, `new-semantic-scholar-toolkit`, in the repository `renxinxing123/camel-software-testing` and opened a new pull request (#3). For the changed files, could you please help me check whether the corresponding unit tests fully cover all necessary cases? Are there any additional tests that should be added?
+```
+
+---
+
+## Notes
+
+* When running tests, the system identifies the relevant unit test files and executes all test cases within them for reliable coverage.
+* The project is designed for easy extension—feel free to add new agent scripts or tools!
+
+---
 
 ## Get Involved
 
-This is an early-stage prototype. Feedback and contributions are welcome.
+This is an early-stage prototype. Feedback and contributions are welcome!
 
 Discord: [https://discord.gg/cDzGHnzkwD](https://discord.gg/cDzGHnzkwD)
 
 ---
-
-
-
-
-
-
 

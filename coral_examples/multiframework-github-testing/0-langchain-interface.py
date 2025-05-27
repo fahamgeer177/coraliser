@@ -2,25 +2,24 @@ import asyncio
 import os
 import json
 import logging
+import urllib.parse
+from dotenv import load_dotenv
+from anyio import ClosedResourceError
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain.tools import Tool
-from dotenv import load_dotenv
-from anyio import ClosedResourceError
-import urllib.parse
+from langchain_community.callbacks import get_openai_callback
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 4,
+    "waitForAgents": 6,
     "agentId": "user_interaction_agent",
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
@@ -52,20 +51,13 @@ async def create_interface_agent(client, tools):
             2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
             3. Take 2 seconds to understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
-            5. If the user's query is for example, "Please execute the unit test for the '1' PR in repo 'renxinxing123/camel-software-testing", extract PR number as "pr_number" and repo name as "repo_name" from the request.
-            5. Once you identify the user's intent to execute a unit test for a PR on a repo do the below steps. Else go to Step 1 telling the user that you can help with Unit test and you require PR number and repo name.
-            6. If the user's intent is to execute a unit test, do the following:
-                * Use `list_agents` to check "gitclone_agent", "codediff_review_agent" and "unit_test_agent" agents are present, if not go to Step 1 and ask user to register these agents.
-                * Send a message to the "gitclone_agent" with the content: "Please clone the repository "repo_name" and check out PR "pr_number".
-                * Use `wait_for_mentions(timeoutMs=30000)` to receive the response from "gitclone_agent". If you don't receive a response, try twice more and then if it fails, go to Step 1 and tell the user that you are unable to clone the repo.
-                * If the "gitclone_agent" successfully sends a message with the "root path", save it in memory
-                * Send a message to the "codediff_review_agent" with the content: "Please analyze the code changes in PR "pr_number" of repo "repo_name".
-                * Use `wait_for_mentions(timeoutMs=30000)` to receive the response from "codediff_review_agent". If you don't receive a response, try twice more and then if it fails, go to Step 1 and tell the user that you are unable to analyze the code changes.
-                * If the "codediff_review_agent" successfully sends a message with  the "formatted code diffs", save it in memory.
-                * Send a message to the "unit_test_agent" with the content: " With the "root path" and "formatted code diffs" execute the unit test."
-                * Use `wait_for_mentions(timeoutMs=60000)` to receive the response from "unit_test_agent". If you don't receive a response, try twice more and then if it fails, go to Step 1 and tell the user that you are unable to execute the unit test.
-                * If the "unit_test_agent" successfully sends a message with the "test results", send it back to the user as a response.
-                * Record and store the response for final presentation.
+            5. If fulfilling the request requires multiple agents, determine the sequence and logic for calling them.
+            6. For each selected agent:
+            * If a conversation thread with the agent does not exist, use `create_thread` to create one.
+            * Construct a clear instruction message for the agent.
+            * Use `send_message` in the corresponding thread, mentioning the agent, with content: "instruction".
+            * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response, recall `wait_for_mentions(timeoutMs=60000)` up to 5 times if no message received.
+            * Record and store the response for final presentation.
             7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
             8. Wait for 3 seconds, then use `ask_human` to ask: "Is there anything else I can help you with?"
             9. If the user replies with a new request, repeat the process from Step 1.
@@ -74,16 +66,14 @@ async def create_interface_agent(client, tools):
     ])
 
     model = ChatOpenAI(
-        model="gpt-4.1-2025-04-14",
+        model="gpt-4.1-mini-2025-04-14",
         api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.3,
-        max_tokens=8192  # or 16384, 32768 depending on your needs; for gpt-4o-mini, make sure prompt + history + output < 128k tokens
+        max_tokens=8192
     )
 
-    #model = ChatOllama(model="llama3")
-
     agent = create_tool_calling_agent(model, tools, prompt)
-    return AgentExecutor(agent=agent, tools=tools, verbose=True)
+    return AgentExecutor(agent=agent, tools=tools, max_iterations=100 ,verbose=True, stream_runnable=False)
 
 async def main():
     max_retries = 5
@@ -95,8 +85,8 @@ async def main():
                     "coral": {
                         "transport": "sse",
                         "url": MCP_SERVER_URL,
-                        "timeout": 30,
-                        "sse_read_timeout": 60,  # Reduced timeout
+                        "timeout": 600,
+                        "sse_read_timeout": 600,
                     }
                 }
             ) as client:
@@ -108,7 +98,15 @@ async def main():
                     description="Ask the user a question and wait for a response."
                 )]
                 logger.info(f"Tools Description:\n{get_tools_description(tools)}")
-                await (await create_interface_agent(client, tools)).ainvoke({})
+
+                with get_openai_callback() as cb:
+                    agent_executor = await create_interface_agent(client, tools)
+                    await agent_executor.ainvoke({})
+                    logger.info(f"Token usage for this run:")
+                    logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
+                    logger.info(f"  Completion Tokens: {cb.completion_tokens}")
+                    logger.info(f"  Total Tokens: {cb.total_tokens}")
+                    logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
         except ClosedResourceError as e:
             logger.error(f"ClosedResourceError on attempt {attempt + 1}: {e}")
             if attempt < max_retries - 1:
@@ -130,3 +128,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
