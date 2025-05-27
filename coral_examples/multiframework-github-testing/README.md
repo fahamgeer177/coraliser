@@ -78,12 +78,12 @@ python 0-langchain-interface.py
 
 ```bash
 # Terminal 2: GitClone Agent
-python 1-langchain-GitCloneAgent.py
+python 1-crewai-GitCloneAgent.py
 ```
 
 ```bash
 # Terminal 3: CodeDiffReview Agent
-python 2-langchain-CodeDiffReviewAgent.py
+python 2-camel-CodeDiffReviewAgent.py
 ```
 
 ```bash
