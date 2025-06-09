@@ -6,11 +6,9 @@ Coraliser is a powerful tool that streamlines the integration of both MCP server
 
 Coraliser currently includes the following components:
 
-**mcp-coraliser**
-By simply providing a `coraliser_settings.json` file containing connection details for multiple MCP servers and executing `coraliser.py`, Coraliser automates the entire setup. It generates Coral-compatible agents that are immediately ready to operate within the Coral network.
+- **mcp-coraliser**: By simply providing a `coraliser_settings.json` file containing connection details for multiple MCP servers and executing `coraliser.py`, Coraliser automates the entire setup. It generates Coral-compatible agents that are immediately ready to operate within the Coral network.
 
-**agent-coraliser**
-By providing an input agent in .py format and executing coraliser.py, Coraliser first validates whether the file contains a valid agent. If it does, it generates a Coral-compatible version of that agent, ready to run within the Coral network.
+- **agent-coraliser**: By providing an input agent in .py format and executing coraliser.py, Coraliser first validates whether the file contains a valid agent. If it does, it generates a Coral-compatible version of that agent, ready to run within the Coral network.
 
 ## Why Coraliser?
 
