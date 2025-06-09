@@ -112,7 +112,7 @@ def get_agent_description_from_toolkit(toolkit_code, agent_name):
     return description
 
 def replace_template(base_template, toolkit_code, agent_desc, agent_name, toolkit_name):
-    # 替换toolkit函数
+ 
     import re
     base_template = re.sub(
         r"@tool\s*\ndef\s+stock_ticker_toolkit\(.*?\):[\s\S]*?return output", 
@@ -120,23 +120,23 @@ def replace_template(base_template, toolkit_code, agent_desc, agent_name, toolki
         base_template, 
         flags=re.DOTALL
     )
-    # 替换agent description
+    # replace agent description
     base_template = base_template.replace('"agentDescription": ""', f'"agentDescription": "{agent_desc}"')
-    # 替换agentId
+    # replace agentId
     base_template = base_template.replace('"agentId": ""', f'"agentId": "{agent_name}"')
-    # 替换toolkit名字
+    # replace toolkit name
     base_template = base_template.replace("[stock_ticker_toolkit]", f"[{toolkit_name}]")
     return base_template
 
 def main():
-    # 输入
+    # input
     base_template_file = "base-agent2agent-coraliser.py"
     agent_file = "livekitagent.py"
     output_file = "coralised_agent.py"
-    agent_name = "livekit_agent"         # 你可以用 argparse 传参
-    toolkit_name = "livekit_toolkit"  # 你可以用 argparse 传参
+    agent_name = "livekit_agent"         
+    toolkit_name = "livekit_toolkit"  
 
-    # 读取原文件内容
+    
     base_template = read_file(base_template_file)
     agent_code = read_file(agent_file)
 
