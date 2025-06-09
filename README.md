@@ -37,7 +37,7 @@ Follow these steps to set up and run the Coraliser:
 
 3. **Run the Coraliser**: Execute the following command to create the coralised agents:
    ```bash
-   python utils/langchain/coraliser.py
+   python utils/langchain/mcp-coraliser/coraliser.py
    ```
    This will validate connections to all MCP servers specified in the `coraliser_settings.json` file and generate agent scripts tailored to integrate with the Coral Server.
 
@@ -63,7 +63,7 @@ Follow these steps to set up and run the Agent-Coraliser:
 3. **Run the Coraliser**: 
    - Execute the following command to coralise the agent: 
       ```bash
-      python utils/langchain/coraliser.py
+      python utils/langchain/agent-coraliser/coraliser.py
       ```
    - It will ask the agent name as Input, ensure you add the agent name along with the file extension.
 
