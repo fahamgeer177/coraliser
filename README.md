@@ -53,7 +53,7 @@ Follow these steps to set up and run the Coraliser:
 
 Once launched, these agents will be ready to receive and respond to queries from other agents within the Coral ecosystem.
 
-## Setting Up and Running the MCP-Coraliser
+## Setting Up and Running the Agent-Coraliser
 Follow these steps to set up and run the Agent-Coraliser:
 
 1. **Create the .env file**: Copy the .env_sample file to .env and update it with your specific environment variable values (e.g., OPENAI_API_KEY).
