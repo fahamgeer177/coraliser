@@ -74,7 +74,7 @@ This script validates connections and generates Coral-compatible agent scripts.
 ```
 </details> 
 
-## Get Started for mcp-coraliser
+## Get Started for agent-coraliser
 
 ### 1. Clone & Install Dependencies
 <details>
