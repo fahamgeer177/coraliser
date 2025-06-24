@@ -17,7 +17,7 @@ The key difference between the MCP Coraliser and the Agent Coraliser lies in the
 
 In contrast, the Agent Coraliser works by analyzing a given Python file to determine whether it defines a valid agent. If the file does not represent a compatible agent, it flags the issue. If it is valid, the Agent Coraliser generates a Coralised version of the agent, making it compatible with the Coral Protocol and ready to interact within the Coral ecosystem.
 
-## Get Started
+## Get Started for mcp-coraliser
 
 ### 1. Clone & Install Dependencies
 <details>
@@ -71,6 +71,35 @@ This script validates connections and generates Coral-compatible agent scripts.
 
 ```bash
    uv run github_coral_agent.py
+```
+</details> 
+
+## Get Started for mcp-coraliser
+
+### 1. Clone & Install Dependencies
+<details>
+
+```bash
+# Clone the Repository
+git clone https://github.com/Coral-Protocol/Coraliser.git
+
+# Navigate to the Project Directory
+cd Coraliser
+
+# Install uv
+pip install uv
+
+# Sync dependencies from pyproject.toml
+uv sync
+```
+</details>
+
+### 2. Configure Environment Variables
+<details>
+
+```bash
+# Create .env file in project root
+cp -r .env_sample .env
 ```
 </details> 
 
