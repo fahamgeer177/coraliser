@@ -103,7 +103,7 @@ cp -r .env_sample .env
 ```
 </details> 
 
-### 4. Setting Up and Running the Agent-Coraliser
+### 3. Setting Up and Running the Agent-Coraliser
 <details>
 
 1. **Prepare the Input Agent**:  
