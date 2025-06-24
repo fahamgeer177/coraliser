@@ -13,6 +13,10 @@ Coraliser currently includes the following components:
 
 - **agent-coraliser**: By providing an input agent in `.py` format and executing `coraliser.py`, Coraliser first validates whether the file contains a valid agent using a Language model. If it does, it generates a Coral-compatible version of that agent, ready to run within the Coral Server.
 
+The key difference between the MCP Coraliser and the Agent Coraliser lies in their scope. The MCP Coraliser creates Coralised agents by connecting to available MCP servers using adaptors—which are essentially connection commands defined in the json. Once connected, it reads all available tools from the MCP server and create coralised agents. These Coralised agents can then process prompts and execute actions using the connected MCP tools, all within the same Coral Server. 
+
+In contrast, the Agent Coraliser works by analyzing a given Python file to determine whether it defines a valid agent. If the file does not represent a compatible agent, it flags the issue. If it is valid, the Agent Coraliser generates a Coralised version of the agent, making it compatible with the Coral Protocol and ready to interact within the Coral ecosystem.
+
 ## Get Started
 
 ### 1. Clone & Install Dependencies
