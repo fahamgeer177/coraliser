@@ -12,9 +12,9 @@ An AI agent within any given framework ([LangChain](https://github.com/langchain
 
 - **Tools:** Tools extend the agent’s capabilities by enabling interaction with the external environment, such as fetching data via APIs, controlling hardware, or performing specialized computations.
 
-### MCP & AI Agent Frameworks
+### MCP & Frameworks
 
-After the launch of [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol), most AI frameworks have adopted a client-based approach, enabling AI agents, acting as clients, to easily connect to a suite of powerful tools provided by the MCP server. These tools include standardised APIs that allow agents to interface with external systems, such as databases or web services, for seamless data retrieval and task execution specific to AI operations. Data exchange modules enable real-time data transfer, connecting agents to AI-relevant data sources, such as training datasets or live inference inputs. Task orchestration tools further enhance the system by coordinating synchronised actions, allowing AI agents to execute collaborative tasks efficiently within the multi-agent framework. 
+After the launch of [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol), most AI frameworks have adopted a client-based approach, enabling AI agents, acting as clients, to easily connect to a suite of powerful tools provided by the MCP server. These tools include standardised APIs that allow agents to interface with external systems, such as databases or web services, for seamless data retrieval and task execution specific to AI operations.
 
 An AI agent determines which tools it can use through a discovery mechanism provided by the MCP server, typically involving a tool registry or metadata service that lists available tools, their functionalities, and access protocols, enabling the agent to select appropriate tools based on its task requirements and compatibility.
 
