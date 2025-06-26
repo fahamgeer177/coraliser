@@ -160,16 +160,16 @@ cp -r .env_sample .env
 
    - Check files `firecrawl_coral_agent.py`, `github_coral_agent.py` to confirm they are configured correctly.
 
-   - **Run the Agents** (assuming your Coral Server is running):
+   - Run the Agents (assuming your Coral Server is running):
 
-   ```bash
-      uv run firecrawl_coral_agent.py
-   ```
+      ```bash
+         uv run firecrawl_coral_agent.py
+      ```
 
-   ```bash
-      uv run github_coral_agent.py
-   ```
-</details> 
+      ```bash
+         uv run github_coral_agent.py
+      ```
+</details>
 
 ## License
 
