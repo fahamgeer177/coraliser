@@ -8,7 +8,7 @@ An AI agent within any given framework ([LangChain](https://github.com/langchain
 
 - **Model:** The model serves as the computational core, typically a machine learning system like a large language model or reinforcement learning algorithm, processing inputs to generate decisions or outputs. 
 
--**Prompts:** Prompts act as the guiding interface, providing structured instructions or queries that shape the model’s behavior to align with specific goals, such as answering questions or executing tasks.
+- **Prompts:** Prompts act as the guiding interface, providing structured instructions or queries that shape the model’s behavior to align with specific goals, such as answering questions or executing tasks.
 
 - **Tools:** Tools extend the agent’s capabilities by enabling interaction with the external environment, such as fetching data via APIs, controlling hardware, or performing specialized computations.
 
