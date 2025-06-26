@@ -36,6 +36,8 @@ To develop a custom Coralised Agent that connects to the Coral Server as a clien
    - Implement retry logic to handle connection failures, such as `ClosedResourceError`, with a maximum retry limit (e.g., 5 attempts) and delay (e.g., 5 seconds) to ensure robust connectivity.  
    - Verify the connection by logging the initialization of `MultiServerMCPClient` and checking for successful tool retrieval from the server.
 
+   ![alt text](images/1.png)
+
 </details>  
 
 <details>
