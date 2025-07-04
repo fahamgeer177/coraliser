@@ -4,6 +4,8 @@
 
 ### AI Agent
 
+ ![alt text](images/AIagentcomponents.png)
+
 An AI agent within any given framework ([LangChain](https://github.com/langchain-ai/langchain), [Camel](https://github.com/camel-ai/camel), [CrewAi](https://github.com/crewAIInc/crewAI)) can be conceptualised as comprising three core components: model, prompts, and tools. Together, these components enable the AI agent to perceive, reason, and act within a framework, with the model processing data, prompts directing its focus, and tools facilitating real-world interactions.
 
 - **Model:** The model serves as the computational core, typically a machine learning system like a large language model or reinforcement learning algorithm, processing inputs to generate decisions or outputs. 
@@ -14,11 +16,15 @@ An AI agent within any given framework ([LangChain](https://github.com/langchain
 
 ### MCP & Frameworks
 
+ ![alt text](images/MCPframeworks.png)
+
 After the launch of [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol), most AI frameworks have adopted a client-based approach, enabling AI agents, acting as clients, to easily connect to a suite of powerful tools provided by the MCP server. These tools include standardised APIs that allow agents to interface with external systems, such as databases or web services, for seamless data retrieval and task execution specific to AI operations.
 
 An AI agent determines which tools it can use through a discovery mechanism provided by the MCP server, typically involving a tool registry or metadata service that lists available tools, their functionalities, and access protocols, enabling the agent to select appropriate tools based on its task requirements and compatibility.
 
 ### Coralised Agent
+
+ ![alt text](images/Coralised_Agent.png)
 
 A Coralised Agent is an AI agent developed within any given framework and configured to connect as a client to the [Coral Server](https://github.com/Coral-Protocol/coral-server), which is a MCP server. This connection enables the agent to access a robust set of tools provided by the Coral Server, enhancing its capabilities beyond those of its original framework. In addition to these server-provided tools, the Coralised Agent retains its native tools from its original framework, allowing it to combine the Coral Server’s advanced capabilities with its inherent functionalities.
 
