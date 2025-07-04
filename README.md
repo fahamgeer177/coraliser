@@ -108,6 +108,8 @@ To develop a custom Coralised Agent that connects to the Coral Server as a clien
 
 ## What is Coraliser?
 
+![alt text](images/Coraliser.png)
+
 Coraliser streamlines the adoption of Coral by automating the conversion of both MCP servers and standalone agents into Coral-compatible agents. Once integrated, these agents can seamlessly receive inputs from the Coral Server and invoke their tools as needed. This makes your multi-agent system more efficient, scalable, and ready for production use without additional configuration.
 
 Coraliser is a powerful tool that streamlines the integration of both MCP servers and standalone agents with the Coral Server. It automates the generation of Coral-compatible agents, eliminating the need for manual wiring or complex configurations.
