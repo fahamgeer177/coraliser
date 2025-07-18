@@ -39,11 +39,11 @@ class AgentGenerator:
         )
 
         llm_helper = init_chat_model(
-            model=os.getenv('llm_model_name'),
-            model_provider=os.getenv('llm_model_provider'),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            temperature=0.3,
-            max_tokens=16000,
+            model=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+            model_provider=os.getenv("MODEL_PROVIDER", "openai"),
+            api_key=os.getenv("API_KEY"),
+            temperature=os.getenv("MODEL_TEMPERATURE", "0.1"),
+            max_tokens=os.getenv("MODEL_TOKEN", "8000"),
             model_kwargs={"response_format": {"type": "json_object"}}
         )
 
@@ -76,7 +76,6 @@ class AgentGenerator:
             return False    
     
     def create_agent(self, agent_description):
-	
         items = []
         env_code_str = None
         mcp_object = self.get_agent_config()
@@ -98,19 +97,46 @@ class AgentGenerator:
         with open(coraliser_path, 'r') as py_file:
                 base_code = py_file.read()
         
-        base_code = base_code.replace('"agentId": "",', f'"agentId": "{self.agent_name}",')
+        base_code = base_code.replace('"agentId": "",', f'"agentId": agentID,')
         base_code = base_code.replace('"agentDescription": ""', f'"agentDescription": "{agent_description}"')
         base_code = base_code.replace('"mcp": ""', mcp_dict_code)
-        base_code = base_code.replace("agent_tools = multi_connection_client.server_name_to_tools['mcp']",
-                                      f"agent_tools = multi_connection_client.server_name_to_tools['{self.agent_name}']")
+        base_code = base_code.replace("agent_tools = await client.get_tools(server_name='mcp')",
+                                      f"agent_tools = await client.get_tools(server_name='{self.agent_name}')")
 
-        filename = f"{self.agent_name.lower()}_coral_agent.py"
+        # Create the directory agent/<agent_name> if it doesn't exist
+        output_dir = os.path.join("coralised_agents", self.agent_name.lower())
+        os.makedirs(output_dir, exist_ok=True)
+        filename = os.path.join(output_dir, f"main.py")
         
         with open(filename, "w") as f:
             f.write(base_code)
         print(f"File '{filename}' created successfully.")
 
+        # Create the .env file with specified keys
+        env_filename = os.path.join(output_dir, ".env")
+        env_vars = {}
+        
+        # Add environment variables from mcp_object["env"] if it exists
+        if "env" in mcp_object:
+            for key in mcp_object["env"]:
+                env_vars[key] = self.get_env_or_raise(key)
+        
+        # Add hardcoded environment variables
+        env_vars.update({
+            "MODEL_NAME": "gpt-4.1-mini",
+            "MODEL_PROVIDER": "openai",
+            "MODEL_TOKEN": "16000",
+            "MODEL_TEMPERATURE": "0.3",
+            "API_KEY": self.get_env_or_raise("API_KEY")
+        })
 
+        # Format environment variables for .env file
+        env_content = "\n".join(
+            f"{key}={value}" for key, value in env_vars.items()
+        )
+        with open(env_filename, "w") as f:
+            f.write(env_content)
+        print(f"File '{env_filename}' created successfully.")
 
 async def main():
     with open(r'coraliser_settings.json', 'r') as f:

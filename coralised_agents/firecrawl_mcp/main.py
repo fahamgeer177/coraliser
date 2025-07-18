@@ -6,16 +6,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 
-load_dotenv()
-
-coral_base_url = os.getenv('coral_base_url')
-coral_params = {
-    "waitForAgents": 1,
-    "agentId": "firecrawl",
-    "agentDescription": "You are a firecrawl agent capable of performing comprehensive web scraping, crawling, and data extraction tasks, including structured data extraction and deep research, by utilizing a variety of tools to navigate, search, and analyze web content efficiently."
-}
-
-query_string = urllib.parse.urlencode(coral_params)
 
 def get_tools_description(tools):
     return "\n".join(
@@ -51,18 +41,37 @@ async def create_agent(coral_tools, agent_tools):
     ])
 
     model = init_chat_model(
-            model=os.getenv('llm_model_name'),
-            model_provider=os.getenv('llm_model_provider'),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            temperature=0.3,
-            max_tokens=16000
+            model=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+            model_provider=os.getenv("MODEL_PROVIDER", "openai"),
+            api_key=os.getenv("API_KEY"),
+            temperature=os.getenv("MODEL_TEMPERATURE", "0.1"),
+            max_tokens=os.getenv("MODEL_TOKEN", "8000"),
         )
     agent = create_tool_calling_agent(model, combined_tools, prompt)
     return AgentExecutor(agent=agent, tools=combined_tools, verbose=True)
 
 async def main():
-	CORAL_SERVER_URL = f"{coral_base_url}?{query_string}"
-	async with MultiServerMCPClient(
+    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
+
+    if runtime == "docker" or runtime == "executable":
+        base_url = os.getenv("CORAL_SSE_URL")
+        agentID = os.getenv("CORAL_AGENT_ID")
+    else:
+        load_dotenv()
+        base_url = os.getenv("CORAL_SSE_URL")
+        agentID = os.getenv("CORAL_AGENT_ID")
+
+    coral_params = {
+        "agentId": agentID,
+        "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
+    }
+
+    query_string = urllib.parse.urlencode(coral_params)
+
+    CORAL_SERVER_URL = f"{base_url}?{query_string}"
+    print(f"Connecting to Coral Server: {CORAL_SERVER_URL}")
+    
+    client = MultiServerMCPClient(
 		connections = {
 			"coral": {
 				"transport": "sse",
@@ -70,26 +79,28 @@ async def main():
 				"timeout": 300,
 				"sse_read_timeout": 300
 			},
-			"firecrawl": {"transport": 'sse', "url": 'http://localhost:3000/sse', "timeout": 300, "sse_read_timeout": 300}
+			"firecrawl_mcp": {"command": 'npx', "args": ['-y', 'firecrawl-mcp'], "env": {"FIRECRAWL_API_KEY": os.getenv("FIRECRAWL_API_KEY")}}
 		}
-    ) as multi_connection_client:
-			print("Multi Server Connection Established")
-			agent_tools = multi_connection_client.server_name_to_tools['firecrawl']
-			coral_tools = multi_connection_client.server_name_to_tools['coral']
-			print(f"Coral tools count: {len(coral_tools)} and agent tools count: {len(agent_tools)}")
-			
-			agent_executor = await create_agent(coral_tools, agent_tools)
-			
-			while True:
-				try:
-					print("Starting new agent invocation")
-					await agent_executor.ainvoke({"agent_scratchpad": []})
-					print("Completed agent invocation, restarting loop")
-					await asyncio.sleep(1)
-				except Exception as e:
-					print(f"Error in agent loop: {str(e)}")
-					print(traceback.format_exc())
-					await asyncio.sleep(5)
+    )
+
+    print("Multi Server Connection Established")
+    coral_tools = await client.get_tools(server_name='coral')
+    agent_tools = await client.get_tools(server_name='firecrawl_mcp')
+
+    print(f"Coral tools count: {len(coral_tools)} and agent tools count: {len(agent_tools)}")
+    
+    agent_executor = await create_agent(coral_tools, agent_tools)
+    
+    while True:
+        try:
+            print("Starting new agent invocation")
+            await agent_executor.ainvoke({"agent_scratchpad": []})
+            print("Completed agent invocation, restarting loop")
+            await asyncio.sleep(1)
+        except Exception as e:
+            print(f"Error in agent loop: {str(e)}")
+            print(traceback.format_exc())
+            await asyncio.sleep(5)
 
 if __name__ == "__main__":
     asyncio.run(main())
