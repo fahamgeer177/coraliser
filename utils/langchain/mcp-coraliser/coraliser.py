@@ -113,21 +113,23 @@ class AgentGenerator:
         print(f"File '{filename}' created successfully.")
 
         # Create the .env file with specified keys
-        env_filename = os.path.join(output_dir, ".env")
+        env_filename = os.path.join(output_dir, ".env_sample")
         env_vars = {}
         
         # Add environment variables from mcp_object["env"] if it exists
         if "env" in mcp_object:
             for key in mcp_object["env"]:
-                env_vars[key] = self.get_env_or_raise(key)
+                env_vars[key] = ""
         
         # Add hardcoded environment variables
         env_vars.update({
             "MODEL_NAME": "gpt-4.1-mini",
             "MODEL_PROVIDER": "openai",
             "MODEL_TOKEN": "16000",
-            "MODEL_TEMPERATURE": "0.3",
-            "API_KEY": self.get_env_or_raise("API_KEY")
+            "MODEL_TEMPERATURE": "0.0",
+            "API_KEY": "",
+            "CORAL_AGENT_ID": self.agent_name.lower(),
+            "CORAL_SSE_URL": "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
         })
 
         # Format environment variables for .env file
@@ -137,6 +139,74 @@ class AgentGenerator:
         with open(env_filename, "w") as f:
             f.write(env_content)
         print(f"File '{env_filename}' created successfully.")
+
+         # Create the pyproject.toml file
+        pyproject_filename = os.path.join(output_dir, "pyproject.toml")
+        pyproject_content = f"""[project]
+name = {self.agent_name.lower()}
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "langchain==0.3.25",
+    "langchain-community==0.3.24",
+    "langchain-experimental==0.3.4",
+    "langchain-groq==0.3.4",
+    "langchain-mcp-adapters==0.1.7",
+    "langchain-openai==0.3.26",
+    "pandas==2.3.0",
+    "tabulate>=0.9.0",
+    "uv>=0.7.17",
+]
+"""
+        with open(pyproject_filename, "w") as f:
+            f.write(pyproject_content)
+        print(f"File '{pyproject_filename}' created successfully.")
+
+        # Create the run_agent.sh file
+        run_agent_filename = os.path.join(output_dir, "run_agent.sh")
+        run_agent_content = """#!/bin/bash
+
+# Check for exactly one argument
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <python_script_path>" >&2
+  exit 1
+fi
+PYTHON_SCRIPT="$1"
+
+# Determine script directory
+SCRIPT_DIR=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0" 2>/dev/null || echo "$0")")
+
+# Ensure write permissions for script directory
+chmod u+w "$SCRIPT_DIR" || {
+  echo "Error: Could not set write permissions for $SCRIPT_DIR" >&2
+  exit 1
+}
+
+PROJECT_DIR="$SCRIPT_DIR"
+echo "Project directory: $PROJECT_DIR"
+echo "Python script to run: $PYTHON_SCRIPT"
+
+# Change to project directory
+cd "$PROJECT_DIR" || {
+  echo "Error: Could not change to directory $PROJECT_DIR" >&2
+  exit 1
+}
+
+# Set and activate virtual environment
+echo "Activating virtual environment..."
+VENV_ACTIVATE="$([[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]] && echo "$PROJECT_DIR/.venv/Scripts/activate" || echo "$PROJECT_DIR/.venv/bin/activate")"
+[ ! -f "$VENV_ACTIVATE" ] && { echo "Error: Virtual environment activation script $VENV_ACTIVATE not found" >&2; exit 1; }
+source "$VENV_ACTIVATE" || { echo "Error: Failed to activate virtual environment" >&2; exit 1; }
+ 
+# Run Python script
+echo "Running $PYTHON_SCRIPT..."
+uv run "$PYTHON_SCRIPT" || { echo "Error: Failed to run $PYTHON_SCRIPT" >&2; exit 1; }
+"""
+        with open(run_agent_filename, "w") as f:
+            f.write(run_agent_content)
+        # Set executable permissions for the shell script
+        os.chmod(run_agent_filename, 0o755)
+        print(f"File '{run_agent_filename}' created successfully.")
 
 async def main():
     with open(r'coraliser_settings.json', 'r') as f:
