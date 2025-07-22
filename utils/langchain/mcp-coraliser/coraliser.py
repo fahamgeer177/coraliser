@@ -143,7 +143,7 @@ class AgentGenerator:
          # Create the pyproject.toml file
         pyproject_filename = os.path.join(output_dir, "pyproject.toml")
         pyproject_content = f"""[project]
-name = {self.agent_name.lower()}
+name = "{self.agent_name.lower()}"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
