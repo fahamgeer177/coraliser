@@ -63,7 +63,7 @@ async def main():
 
     coral_params = {
         "agentId": agentID,
-        "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
+        "agentDescription": "firecrawl_mcp agent capable of web scraping, crawling, and extracting structured data from websites, as well as performing deep research and generating LLMs.txt files based on specified URLs."
     }
 
     query_string = urllib.parse.urlencode(coral_params)

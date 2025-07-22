@@ -34,7 +34,7 @@ class AgentGenerator:
             "Using this information, write a concise 1-2 sentence description of what this agent is capable of doing. "
             "Focus on the agent's core functionality as inferred from the tools. "
             "Your response must be a valid JSON object in the following format:\n"
-            f"The description must always start with `I am an {self.agent_name} agent capable of...`"
+            f"The description must always start with `{self.agent_name} agent capable of...`"
             "{\"description\": \"<insert your concise summary here>\"}"
         )
 

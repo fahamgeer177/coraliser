@@ -63,7 +63,7 @@ async def main():
 
     coral_params = {
         "agentId": agentID,
-        "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
+        "agentDescription": "github_mcp agent capable of managing GitHub repositories by creating and updating files, searching repositories and code, handling issues and pull requests, and facilitating collaboration through comments and reviews."
     }
 
     query_string = urllib.parse.urlencode(coral_params)
