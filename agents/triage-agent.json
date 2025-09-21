@@ -1,0 +1,39 @@
+{
+  "agent": {
+    "name": "triage-agent",
+    "version": "1.0.0",
+    "description": "AI-powered GitHub issue triage agent for the Coral Protocol ecosystem",
+    "author": "Triage.AI Team",
+    "license": "MIT",
+    "tags": ["github", "triage", "ai", "issue-management", "automation"],
+    "runtime": {
+      "type": "http",
+      "port": 443,
+      "host": "triage-ai-triage-agent-bp9tzywth-fahamgeer177s-projects.vercel.app"
+    },
+    "endpoints": {
+      "health": { "method": "GET", "path": "/health", "description": "Health check endpoint" },
+      "metadata": { "method": "GET", "path": "/metadata", "description": "Agent metadata and schema information" },
+      "analyze": { "method": "POST", "path": "/analyze", "description": "Analyze GitHub issue and provide triage recommendations" }
+    },
+    "schema": { ... keep your input/output schema ... },
+    "dependencies": ["node >= 18.0.0", "npm >= 8.0.0"],
+    "environment_variables": {
+      "OPENAI_API_KEY": { "description": "OpenAI API key for AI analysis", "required": true, "type": "string" },
+      "AGENT_PORT": { "description": "Port for the agent server", "required": false, "default": 3001, "type": "number" }
+    },
+    "coral": {
+      "registry_compatible": true,
+      "supports_streaming": false,
+      "stateless": true,
+      "concurrent_requests": 10
+    },
+    "examples": [ ... your examples ... ]
+  },
+  "registration": {
+    "timestamp": "2025-09-20T22:20:12.601Z",
+    "registry_compatible": true,
+    "local_endpoint": "https://triage-ai-triage-agent-bp9tzywth-fahamgeer177s-projects.vercel.app",
+    "status": "ready"
+  }
+}
